@@ -45,6 +45,15 @@ namespace arg_parsing_demo
         return in;
     }
 
+    template <typename T>
+    bool CompareStringInsensitive(const std::basic_string<T>& l, const std::basic_string<T>& r)
+    {
+        auto l_lower = std::transform(begin(l), end(l), std::tolower);
+        auto r_lower = std::transform(begin(r), end(r), std::tolower);
+
+        return l_lower == r_lower;
+    }
+
     struct ProgramArgs
     {
         std::optional<ArgsPOD> Process(int argc, wchar_t* argv[])
@@ -55,24 +64,21 @@ namespace arg_parsing_demo
             po::variables_map vm;
 
             desc.add_options()
-                ("help,h",                                                     "Get help")
-                ("intArg",  po::wvalue<int>(&args_.intArg)->default_value(42), "Specifies the integer argument")
-                ("strArg",  po::wvalue<std::wstring>(&args_.strArg),           "Specifies the std::string argument")
-                ("enumArg", po::wvalue<TernaryArg>(&args_.enumArg),            "Specifies the custom enum arg")
-                ("add",     po::value<int>(&args_.add),                        "additional options")
-                //("like",    po::value<int>(&args_.like),                       "this");
+                ("help,h",                                                         "Get help")
+                ("intArg",      po::wvalue<int>(&args_.intArg)->default_value(42), "Specifies the integer argument")
+                ("strArg",      po::wvalue<std::wstring>(&args_.strArg),           "Specifies the std::string argument")
+                ("enumArg",     po::wvalue<TernaryArg>(&args_.enumArg),            "Specifies the custom enum arg")
+                ("positional",  po::wvalue<std::vector<std::wstring> >())
                 ;
             po::positional_options_description positionalOptions;
-            positionalOptions.add("add", 1);
-            //positionalOptions.add("like", 1);
-
+            positionalOptions.add("positional", 2);
 
             try
             {
-                po::store(po::wcommand_line_parser(argc, argv).options(desc)
-                    .positional(positionalOptions).run(),
-
-                    vm); // throws on error 
+                po::store(po::wcommand_line_parser(argc, argv)
+                            .options(desc)
+                            .positional(positionalOptions).run(),
+                          vm); // throws on error
                 notify(vm);
             }
             catch (const po::required_option & e)
@@ -88,6 +94,16 @@ namespace arg_parsing_demo
             if (vm.count("help") > 0)
             {
                 std::cout << desc << std::endl;
+
+                return {};
+            }
+
+            if (vm.count("positional"))
+            {
+                for (auto pos_param : vm["positional"].as<std::vector<std::wstring>>())
+                {
+                    std::wcout << L"positional: " << pos_param << std::endl;
+                }
             }
 
             return { args_ };
