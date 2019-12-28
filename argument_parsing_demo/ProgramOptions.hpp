@@ -22,6 +22,9 @@ namespace arg_parsing_demo
         int intArg;
         TernaryArg enumArg;
         std::wstring strArg;
+
+        int add;
+        int like;
     };
 
     std::wistream& operator>>(std::wistream& in, TernaryArg& enumArg)
@@ -56,18 +59,30 @@ namespace arg_parsing_demo
                 ("intArg",  po::wvalue<int>(&args_.intArg)->default_value(42), "Specifies the integer argument")
                 ("strArg",  po::wvalue<std::wstring>(&args_.strArg),           "Specifies the std::string argument")
                 ("enumArg", po::wvalue<TernaryArg>(&args_.enumArg),            "Specifies the custom enum arg")
+                ("add",     po::value<int>(&args_.add),                        "additional options")
+                //("like",    po::value<int>(&args_.like),                       "this");
                 ;
+            po::positional_options_description positionalOptions;
+            positionalOptions.add("add", 1);
+            //positionalOptions.add("like", 1);
 
-            store(parse_command_line(argc, argv, desc), vm);
 
             try
             {
+                po::store(po::wcommand_line_parser(argc, argv).options(desc)
+                    .positional(positionalOptions).run(),
+
+                    vm); // throws on error 
                 notify(vm);
             }
             catch (const po::required_option & e)
             {
                 std::cout << "Error: " << e.what() << std::endl;
                 throw std::invalid_argument("Arguments not correcly specified");
+            }
+            catch (boost::program_options::error & e)
+            {
+                std::cerr << "ERROR: " << e.what() << std::endl << std::endl;
             }
 
             if (vm.count("help") > 0)
