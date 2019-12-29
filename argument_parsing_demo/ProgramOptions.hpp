@@ -48,8 +48,9 @@ namespace arg_parsing_demo
     template <typename T>
     bool CompareStringInsensitive(const std::basic_string<T>& l, const std::basic_string<T>& r)
     {
-        auto l_lower = std::transform(begin(l), end(l), std::tolower);
-        auto r_lower = std::transform(begin(r), end(r), std::tolower);
+        std::basic_string<T> l_lower, r_lower;
+        std::transform(begin(l), end(l), back_inserter(l_lower), ::tolower);
+        std::transform(begin(r), end(r), back_inserter(r_lower), ::tolower);
 
         return l_lower == r_lower;
     }
