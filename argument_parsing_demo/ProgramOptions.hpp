@@ -26,25 +26,7 @@ namespace arg_parsing_demo
         int add;
         int like;
     };
-
-    std::wistream& operator>>(std::wistream& in, TernaryArg& enumArg)
-    {
-        std::wstring token;
-        in >> token;
-
-        std::transform(token.begin(), token.end(), token.begin(),
-            [](unsigned char c) { return std::tolower(c); });
-
-        if (token == L"value_1")
-            enumArg = TernaryArg::Value_1;
-        else if (token == L"value_2")
-            enumArg = TernaryArg::Value_2;
-        else
-            enumArg = TernaryArg::Value_3;
-
-        return in;
-    }
-
+    
     template <typename T>
     bool CompareStringInsensitive(const std::basic_string<T>& l, const std::basic_string<T>& r)
     {
@@ -53,6 +35,21 @@ namespace arg_parsing_demo
         std::transform(begin(r), end(r), back_inserter(r_lower), ::tolower);
 
         return l_lower == r_lower;
+    }
+
+    std::wistream& operator>>(std::wistream& in, TernaryArg& enumArg)
+    {
+        std::wstring token;
+        in >> token;
+
+        if (CompareStringInsensitive(token, L"value_1"))
+            enumArg = TernaryArg::Value_1;
+        else if (CompareStringInsensitive(token, L"value_2"))
+            enumArg = TernaryArg::Value_2;
+        else
+            enumArg = TernaryArg::Value_3;
+
+        return in;
     }
 
     struct ProgramArgs
